@@ -1,32 +1,26 @@
-# Hi, I'm Melina 👋
+<a href="https://meellinaa.github.io/"><img src="assets/hero.svg" width="100%" alt="Melina Fathidashtaki — CS Student · Entrepreneur · Western University. Building at the intersection of code & business."></a>
 
-**Computer Science student at Western University** · TD Scholar · Co-founder of Gold Star Catering
+<img src="assets/marquee.svg" width="100%" alt="Python · Java · C++ · SQL · PyTorch · Computer Vision · Data Pipelines · TD Scholar · Co-Founder">
 
-I build things that combine code and business, from AI audio pipelines and computer vision apps to the data systems behind a growing small business. I'm looking for **software engineering, ML and product internships**.
+<img src="assets/about.svg" width="100%" alt="About: CS student at Western University, TD Scholar, co-founder of a company that grew 30% month-over-month.">
 
-🌐 [Portfolio](https://meellinaa.github.io/) · 💼 [LinkedIn](https://www.linkedin.com/in/melina-f-53372b20a) · 📫 melina3825@gmail.com
+<img src="assets/work.svg" width="100%" alt="01 Selected Work">
 
----
+<a href="https://github.com/Meellinaa/StemSlice"><img src="assets/p-stemslice.svg" width="100%" alt="StemSlice — AI DJ engine"></a>
+<a href="https://github.com/Meellinaa/omniprep-ai"><img src="assets/p-omniprep.svg" width="100%" alt="OmniPrep AI — AI mock interview simulator"></a>
+<a href="https://github.com/Meellinaa/TheGrindTracker"><img src="assets/p-grindtracker.svg" width="100%" alt="The Grind Tracker — job application dashboard"></a>
+<a href="https://github.com/Meellinaa/ai-beauty-consultant"><img src="assets/p-beauty.svg" width="100%" alt="AI Beauty Consultant — foundation matching and skincare chatbot"></a>
+<a href="https://github.com/Meellinaa/llm-robustness-tester"><img src="assets/p-llmtester.svg" width="100%" alt="LLM Robustness Tester — prompt consistency scoring"></a>
+<a href="https://github.com/Meellinaa/SpendPal"><img src="assets/p-spendpal.svg" width="100%" alt="SpendPal — OCR grocery receipt budget tracker"></a>
 
-### 🚀 Featured projects
+<img src="assets/skills.svg" width="100%" alt="Skills: Python, Java, C++, SQL, PyTorch, Computer Vision, pandas, Git, FastAPI, React, MongoDB">
 
-| Project | What it does | Built with |
-|---|---|---|
-| [**StemSlice**](https://github.com/Meellinaa/StemSlice) | AI DJ engine: splits tracks into stems and beatmatches seamless transitions | Python, Demucs, Librosa, FastAPI |
-| [**OmniPrep AI**](https://github.com/Meellinaa/omniprep-ai) | Voice-driven mock interviews with live audio/vision feedback and STAR debriefs (Ignition Hacks) | Python, ElevenLabs, computer vision |
-| [**The Grind Tracker**](https://github.com/Meellinaa/TheGrindTracker) | Visual dashboard for job applications, deadlines and résumés | TypeScript, React, Tailwind |
-| [**AI Beauty Consultant**](https://github.com/Meellinaa/ai-beauty-consultant) | Selfie-based foundation matching and a skincare chatbot on Sephora data | Python, OpenCV, MediaPipe, Streamlit |
-| [**LLM Robustness Tester**](https://github.com/Meellinaa/llm-robustness-tester) | Paraphrases a prompt and scores how consistent an LLM's answers are | Python, FastAPI, sentence-transformers |
-| [**Mark Planner**](https://meellinaa.github.io/mark-planner/) | Works out the marks you need to hit your target grade | JavaScript, HTML/CSS |
+<img src="assets/experience.svg" width="100%" alt="Experience: Morrissette Institute event organizer, Gold Star Catering co-founder, Kumon instructor assistant">
 
-### 🛠️ Tech I use
+<a href="https://meellinaa.github.io/"><img src="assets/contact.svg" width="100%" alt="Let's build something. Open to internships, collaborations & interesting problems."></a>
 
-**Languages:** Python · Java · C++ · TypeScript / JavaScript · SQL · C · R
-**ML & data:** PyTorch · OpenCV · pandas / NumPy · OCR
-**Tools:** Git · FastAPI · React · Qt · JavaFX / Maven · MongoDB · Linux
-
-### 📈 Outside the code
-
-- Co-founded **Gold Star Catering**, using Python & SQL pipelines to find pricing wins → 30% month-over-month revenue growth
-- Student Ambassador at the **Morrissette Institute for Entrepreneurship**, organizing events for student founders
-- **TD Scholar** (one of four university-wide) and Gifted Academic Program member
+<p align="center">
+  <a href="https://meellinaa.github.io/"><img src="https://img.shields.io/badge/Portfolio-meellinaa.github.io-e8a500?style=for-the-badge&labelColor=1a2a4a" alt="Portfolio"></a>
+  <a href="https://www.linkedin.com/in/melina-f-53372b20a"><img src="https://img.shields.io/badge/LinkedIn-Melina_F-e8a500?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=1a2a4a" alt="LinkedIn"></a>
+  <a href="mailto:melina3825@gmail.com"><img src="https://img.shields.io/badge/Email-melina3825@gmail.com-e8a500?style=for-the-badge&logo=gmail&logoColor=white&labelColor=1a2a4a" alt="Email"></a>
+</p>
