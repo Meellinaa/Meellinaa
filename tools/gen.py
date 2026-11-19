@@ -17,7 +17,7 @@ PALETTES = {
     "cream": dict(GOLD="#a8875a", GOLD_A="#ecdcbc", GOLD_B="#faf3e3", RGB="168,135,90", BTN="#1a2a4a"),
     "gold":  dict(GOLD="#e8a500", GOLD_A="#e8a500", GOLD_B="#fcd34d", RGB="232,165,0", BTN="#ffffff"),
 }
-PAL = PALETTES[os.environ.get("ACCENT", "pink")]
+PAL = PALETTES[os.environ.get("ACCENT", "cream")]
 GOLD, GOLD_A, GOLD_B, RGB, BTN = PAL["GOLD"], PAL["GOLD_A"], PAL["GOLD_B"], PAL["RGB"], PAL["BTN"]
 
 
