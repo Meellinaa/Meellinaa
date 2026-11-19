@@ -38,7 +38,8 @@ def font_css(used):
 
 
 def photo(name, width=1200, q=55):
-    im = Image.open(f"{PHOTOS}/{name}").convert("RGB")
+    local = os.path.join(SCR, "photos", name)
+    im = Image.open(local if os.path.exists(local) else f"{PHOTOS}/{name}").convert("RGB")
     h = int(im.height * width / im.width)
     im = im.resize((width, h), Image.LANCZOS)
     buf = io.BytesIO()
@@ -114,10 +115,10 @@ def hero():
             f'<text x="282" y="512" class="dm up" font-weight="500" font-size="12.5" letter-spacing="1.6" fill="{NAVY}">Portfolio ↗</text></g>'
             f'<g class="fade" style="animation-delay:1s"><rect x="1100" y="470" width="1" height="54" fill="rgba(26,42,74,.25)"/>'
             f'<text x="1112" y="510" class="dm up" font-size="11" letter-spacing="1.8" fill="{MUTED}">Scroll</text></g>')
-    body = (gold_grad() + bg_photo("shell.jpg", h,
+    body = (gold_grad() + bg_photo("pearl-shell.jpg", h, y_off=-360,
             overlay="url(#ov)", radius=18)
-            .replace("<defs>", f'<defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,255,255,.72)"/>'
-                     f'<stop offset=".45" stop-color="rgba(240,248,255,.45)"/><stop offset="1" stop-color="rgba(255,255,255,.72)"/></linearGradient>', 1)
+            .replace("<defs>", f'<defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,252,246,.62)"/>'
+                     f'<stop offset=".45" stop-color="rgba(255,250,242,.30)"/><stop offset="1" stop-color="rgba(255,252,246,.66)"/></linearGradient>', 1)
             + nav + tag + name + sub + btns)
     save("hero.svg", svg(h, body))
 
@@ -152,7 +153,7 @@ def about():
             "driving real revenue. Selected as a TD Scholar (one of four university-wide),",
             "admitted to the Gifted Academic Program (18 of 5,000), and co-founded a",
             "company in my first year that grew 30% month-over-month."]
-    body = gold_grad() + bg_photo("surfers.jpg", h, overlay="rgba(240,248,255,.80)") + sec_head("00", "About", 92)
+    body = gold_grad() + bg_photo("sparkle-water.jpg", h, overlay="rgba(255,251,244,.66)", y_off=-520) + sec_head("00", "About", 92)
     for i, l in enumerate(lead):
         body += f'<text x="56" y="{180+i*42}" class="sg fade" font-size="32" letter-spacing="-.8" fill="{NAVY}" style="animation-delay:{.2+i*.1}s">{escape(l)}</text>'
     for i, l in enumerate(para):
@@ -263,8 +264,8 @@ def experience():
 
 # ── CONTACT ─────────────────────────────────────────────────────────────
 def contact():
-    h = 360
-    body = gold_grad() + bg_photo("arch.jpg", h, overlay="rgba(240,248,255,.82)") + sec_head("04", "Contact", 92)
+    h = 460
+    body = gold_grad() + bg_photo("golden-wave.jpg", h, overlay="rgba(252,247,238,.58)", y_off=-640) + sec_head("04", "Contact", 92)
     body += (f'<text x="56" y="200" class="sg fade" font-size="64" letter-spacing="-2.4" fill="{NAVY}" style="animation-delay:.2s">Let\'s build something.</text>'
              f'<text x="58" y="244" class="dm fade" font-size="17" fill="{MUTED}" style="animation-delay:.35s">Open to internships, collaborations &amp; interesting problems.</text>')
     for i, (k, v) in enumerate([("Email", "melina3825@gmail.com ↗"), ("LinkedIn", "melina-f-53372b20a ↗"), ("GitHub", "@Meellinaa ↗")]):
