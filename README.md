@@ -20,7 +20,7 @@
 <a href="https://meellinaa.github.io/"><img src="assets/contact.svg" width="100%" alt="Let's build something. Open to internships, collaborations & interesting problems."></a>
 
 <p align="center">
-  <a href="https://meellinaa.github.io/"><img src="https://img.shields.io/badge/Portfolio-meellinaa.github.io-e8a500?style=for-the-badge&labelColor=1a2a4a" alt="Portfolio"></a>
-  <a href="https://www.linkedin.com/in/melina-f-53372b20a"><img src="https://img.shields.io/badge/LinkedIn-Melina_F-e8a500?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=1a2a4a" alt="LinkedIn"></a>
-  <a href="mailto:melina3825@gmail.com"><img src="https://img.shields.io/badge/Email-melina3825@gmail.com-e8a500?style=for-the-badge&logo=gmail&logoColor=white&labelColor=1a2a4a" alt="Email"></a>
+  <a href="https://meellinaa.github.io/"><img src="https://img.shields.io/badge/Portfolio-meellinaa.github.io-c9637f?style=for-the-badge&labelColor=1a2a4a" alt="Portfolio"></a>
+  <a href="https://www.linkedin.com/in/melina-f-53372b20a"><img src="https://img.shields.io/badge/LinkedIn-Melina_F-c9637f?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=1a2a4a" alt="LinkedIn"></a>
+  <a href="mailto:melina3825@gmail.com"><img src="https://img.shields.io/badge/Email-melina3825@gmail.com-c9637f?style=for-the-badge&logo=gmail&logoColor=white&labelColor=1a2a4a" alt="Email"></a>
 </p>

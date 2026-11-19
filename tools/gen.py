@@ -9,7 +9,16 @@ OUT = os.path.join(SCR, "..", "assets")
 os.makedirs(OUT, exist_ok=True)
 
 W = 1200
-NAVY, MUTED, GOLD, GOLD2, BG2 = "#1a2a4a", "#6b7590", "#e8a500", "#fcd34d", "#f0f6ff"
+NAVY, MUTED, BG2 = "#1a2a4a", "#6b7590", "#f0f6ff"
+# Accent palettes: GOLD = readable accent for text, GOLD_A/GOLD_B = gradient for bars and buttons,
+# RGB = for translucent outlines, BTN = text colour on the filled button.
+PALETTES = {
+    "pink":  dict(GOLD="#c9637f", GOLD_A="#f2a7bd", GOLD_B="#fcdce6", RGB="214,112,143", BTN="#1a2a4a"),
+    "cream": dict(GOLD="#a8875a", GOLD_A="#ecdcbc", GOLD_B="#faf3e3", RGB="168,135,90", BTN="#1a2a4a"),
+    "gold":  dict(GOLD="#e8a500", GOLD_A="#e8a500", GOLD_B="#fcd34d", RGB="232,165,0", BTN="#ffffff"),
+}
+PAL = PALETTES[os.environ.get("ACCENT", "pink")]
+GOLD, GOLD_A, GOLD_B, RGB, BTN = PAL["GOLD"], PAL["GOLD_A"], PAL["GOLD_B"], PAL["RGB"], PAL["BTN"]
 
 
 def b64(path):
@@ -64,8 +73,8 @@ def bg_photo(name, h, overlay="rgba(255,255,255,.78)", radius=18, y_off=None):
 
 
 def gold_grad():
-    return (f'<defs><linearGradient id="gold" x1="0" x2="1"><stop offset="0" stop-color="{GOLD}"/>'
-            f'<stop offset=".5" stop-color="{GOLD2}"/><stop offset="1" stop-color="{GOLD}"/></linearGradient></defs>')
+    return (f'<defs><linearGradient id="gold" x1="0" x2="1"><stop offset="0" stop-color="{GOLD_A}"/>'
+            f'<stop offset=".5" stop-color="{GOLD_B}"/><stop offset="1" stop-color="{GOLD_A}"/></linearGradient></defs>')
 
 
 def sec_head(num, title, y, x=56):
@@ -89,7 +98,7 @@ def hero():
     nav = (f'<text x="56" y="62" class="sg" font-size="16" letter-spacing="1.3" fill="{NAVY}">MF</text>'
            + "".join(f'<text x="{x}" y="62" class="dm up" font-weight="500" font-size="12" letter-spacing="1.7" fill="{MUTED}">{t}</text>'
                      for x, t in [(380, "About"), (480, "Work"), (568, "Skills"), (660, "Experience"), (800, "Contact")])
-           + f'<rect x="1000" y="40" width="144" height="36" rx="18" fill="none" stroke="rgba(232,165,0,.5)" stroke-width="1.5"/>'
+           + f'<rect x="1000" y="40" width="144" height="36" rx="18" fill="none" stroke="rgba({RGB},.5)" stroke-width="1.5"/>'
            f'<text x="1072" y="63" text-anchor="middle" class="dm up" font-weight="600" font-size="12" letter-spacing="1.5" fill="{GOLD}">Portfolio ↗</text>')
     tag = (f'<g class="fade" style="animation-delay:.1s"><rect x="56" y="172" width="36" height="1.2" fill="{GOLD}"/>'
            f'<text x="108" y="177" class="dm up" font-size="12" letter-spacing="2.6" fill="{MUTED}">CS Student · Entrepreneur · Western University</text></g>')
@@ -101,7 +110,7 @@ def hero():
     sub = (f'<text x="56" y="448" class="dm fade" font-size="17" letter-spacing=".6" fill="{MUTED}" style="animation-delay:.6s">'
            f'Building at the intersection of code &amp; business.</text>')
     btns = (f'<g class="fade" style="animation-delay:.8s"><rect x="56" y="482" width="196" height="50" rx="25" fill="url(#gold)"/>'
-            f'<text x="154" y="512" text-anchor="middle" class="dm up" font-weight="600" font-size="12.5" letter-spacing="1.6" fill="#fff">Selected Work →</text>'
+            f'<text x="154" y="512" text-anchor="middle" class="dm up" font-weight="600" font-size="12.5" letter-spacing="1.6" fill="{BTN}">Selected Work →</text>'
             f'<text x="282" y="512" class="dm up" font-weight="500" font-size="12.5" letter-spacing="1.6" fill="{NAVY}">Portfolio ↗</text></g>'
             f'<g class="fade" style="animation-delay:1s"><rect x="1100" y="470" width="1" height="54" fill="rgba(26,42,74,.25)"/>'
             f'<text x="1112" y="510" class="dm up" font-size="11" letter-spacing="1.8" fill="{MUTED}">Scroll</text></g>')
@@ -191,7 +200,7 @@ def work_rows():
         x = 120
         for t in tags:
             w = len(t) * 8.4 + 28
-            body += (f'<rect x="{x}" y="{h-34}" width="{w:.0f}" height="22" rx="11" fill="rgba(232,165,0,.08)" stroke="rgba(232,165,0,.45)"/>'
+            body += (f'<rect x="{x}" y="{h-34}" width="{w:.0f}" height="22" rx="11" fill="rgba({RGB},.08)" stroke="rgba({RGB},.45)"/>'
                      f'<text x="{x+w/2:.0f}" y="{h-19}" text-anchor="middle" class="dm up" font-weight="600" font-size="10" letter-spacing="1.2" fill="{GOLD}">{escape(t)}</text>')
             x += w + 10
         body += f'<text x="1144" y="64" text-anchor="end" class="sg" font-size="22" fill="{GOLD}">↗</text>'
