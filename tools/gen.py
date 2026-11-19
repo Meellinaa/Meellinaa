@@ -1,280 +1,286 @@
-"""Generate portfolio-styled animated SVGs for the GitHub profile README."""
-import base64, io, os, sys
+"""Generate the animated SVG images used in the GitHub profile README.
+
+Run:  python3 tools/gen.py      (writes everything into ../assets)
+Edit the PROJECTS / SKILLS / JOBS lists below to change the content.
+"""
+import base64, io, os, textwrap
 from html import escape
 from PIL import Image
 
 SCR = os.path.dirname(os.path.abspath(__file__))
-PHOTOS = "/Users/melinafathi/Desktop/Projects/Meellinaa.github.io/photos"
 OUT = os.path.join(SCR, "..", "assets")
 os.makedirs(OUT, exist_ok=True)
 
 W = 1200
-NAVY, MUTED, BG2 = "#1a2a4a", "#6b7590", "#f0f6ff"
-# Accent palettes: GOLD = readable accent for text, GOLD_A/GOLD_B = gradient for bars and buttons,
-# RGB = for translucent outlines, BTN = text colour on the filled button.
-PALETTES = {
-    "pink":  dict(GOLD="#c9637f", GOLD_A="#f2a7bd", GOLD_B="#fcdce6", RGB="214,112,143", BTN="#1a2a4a"),
-    "cream": dict(GOLD="#a8875a", GOLD_A="#ecdcbc", GOLD_B="#faf3e3", RGB="168,135,90", BTN="#1a2a4a"),
-    "gold":  dict(GOLD="#e8a500", GOLD_A="#e8a500", GOLD_B="#fcd34d", RGB="232,165,0", BTN="#ffffff"),
-}
-PAL = PALETTES[os.environ.get("ACCENT", "cream")]
-GOLD, GOLD_A, GOLD_B, RGB, BTN = PAL["GOLD"], PAL["GOLD_A"], PAL["GOLD_B"], PAL["RGB"], PAL["BTN"]
+NAVY, MUTED = "#1a2a4a", "#5d6680"
+ACC = "#a8875a"            # warm latte: readable accent for small text
+CREAM_A, CREAM_B = "#ecdcbc", "#faf3e3"   # cream gradient for fills
+PAPER = "#fbf7f0"          # cream panel background
+LINE = "rgba(168,135,90,.28)"
 
 
-def b64(path):
+# ── helpers ──────────────────────────────────────────────────────────────
+def b64file(path):
     return base64.b64encode(open(path, "rb").read()).decode()
 
 
-FONTS = {k: b64(f"{SCR}/fonts/{k}.woff2") for k in ["sg700", "dm400", "dm500", "dm600"]}
+FONTS = {k: b64file(f"{SCR}/fonts/{k}.woff2") for k in ["sg700", "dm400", "dm500", "dm600"]}
+FONT_CSS = "".join(
+    f"@font-face{{font-family:'{fam}';font-weight:{w};src:url(data:font/woff2;base64,{FONTS[k]}) format('woff2');}}"
+    for k, fam, w in [("sg700", "SG", 700), ("dm400", "DM", 400), ("dm500", "DM", 500), ("dm600", "DM", 600)])
 
-
-def font_css(used):
-    fam = {"sg700": ("SG", 700), "dm400": ("DM", 400), "dm500": ("DM", 500), "dm600": ("DM", 600)}
-    out = []
-    for k in used:
-        f, w = fam[k]
-        out.append(f"@font-face{{font-family:'{f}';font-weight:{w};src:url(data:font/woff2;base64,{FONTS[k]}) format('woff2');}}")
-    return "".join(out)
-
-
-def photo(name, width=1200, q=55):
-    local = os.path.join(SCR, "photos", name)
-    im = Image.open(local if os.path.exists(local) else f"{PHOTOS}/{name}").convert("RGB")
-    h = int(im.height * width / im.width)
-    im = im.resize((width, h), Image.LANCZOS)
-    buf = io.BytesIO()
-    im.save(buf, "JPEG", quality=q, optimize=True)
-    return base64.b64encode(buf.getvalue()).decode(), h
-
-
-BASE_CSS = f"""
+CSS = f"""{FONT_CSS}
 .sg{{font-family:'SG',sans-serif;font-weight:700}}
 .dm{{font-family:'DM',sans-serif}}
 .up{{text-transform:uppercase}}
-@keyframes slideUp{{from{{transform:translateY(110%)}}to{{transform:translateY(0)}}}}
-@keyframes fadeUp{{from{{opacity:0;transform:translateY(14px)}}to{{opacity:1;transform:none}}}}
+@keyframes slideUp{{from{{transform:translateY(115%)}}to{{transform:none}}}}
+@keyframes fadeUp{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:none}}}}
 @keyframes grow{{from{{transform:scaleX(0)}}to{{transform:scaleX(1)}}}}
-@keyframes shimmer{{from{{background-position:0%}}to{{background-position:200%}}}}
-.fade{{opacity:0;animation:fadeUp .9s cubic-bezier(.16,1,.3,1) forwards}}
-.grow{{transform-box:fill-box;transform-origin:left;transform:scaleX(0);animation:grow 1.2s cubic-bezier(.16,1,.3,1) forwards}}
+.fade{{opacity:0;animation:fadeUp 1s cubic-bezier(.16,1,.3,1) forwards}}
+.grow{{transform-box:fill-box;transform-origin:left;transform:scaleX(0);animation:grow 1.4s cubic-bezier(.16,1,.3,1) forwards}}
 """
 
-
-def svg(h, body, fonts=("sg700", "dm400", "dm500", "dm600"), extra_css=""):
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{h}" viewBox="0 0 {W} {h}">'
-            f'<style>{font_css(fonts)}{BASE_CSS}{extra_css}</style>{body}</svg>')
+_photo_cache = {}
 
 
-def bg_photo(name, h, overlay="rgba(255,255,255,.78)", radius=18, y_off=None):
-    data, ph = photo(name)
-    y = -(ph - h) // 2 if y_off is None else y_off
-    return (f'<defs><clipPath id="r"><rect width="{W}" height="{h}" rx="{radius}"/></clipPath></defs>'
-            f'<g clip-path="url(#r)"><image href="data:image/jpeg;base64,{data}" x="0" y="{y}" width="{W}" height="{ph}" preserveAspectRatio="xMidYMid slice"/>'
-            f'<rect width="{W}" height="{h}" fill="{overlay}"/></g>')
+def photo(name, width):
+    key = (name, width)
+    if key not in _photo_cache:
+        im = Image.open(os.path.join(SCR, "photos", name)).convert("RGB")
+        h = int(im.height * width / im.width)
+        im = im.resize((width, h), Image.LANCZOS)
+        buf = io.BytesIO()
+        im.save(buf, "JPEG", quality=60, optimize=True)
+        _photo_cache[key] = (base64.b64encode(buf.getvalue()).decode(), h)
+    return _photo_cache[key]
 
 
-def gold_grad():
-    return (f'<defs><linearGradient id="gold" x1="0" x2="1"><stop offset="0" stop-color="{GOLD_A}"/>'
-            f'<stop offset=".5" stop-color="{GOLD_B}"/><stop offset="1" stop-color="{GOLD_A}"/></linearGradient></defs>')
+def svg(w, h, body):
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">'
+            f'<style>{CSS}</style>'
+            f'<defs><linearGradient id="cream" x1="0" x2="1"><stop offset="0" stop-color="{CREAM_A}"/>'
+            f'<stop offset=".5" stop-color="{CREAM_B}"/><stop offset="1" stop-color="{CREAM_A}"/></linearGradient></defs>'
+            f'{body}</svg>')
 
 
-def sec_head(num, title, y, x=56):
-    # "02  Skills ──────" like the portfolio
-    tw = len(title) * 27 + 10
-    return (f'<text x="{x}" y="{y}" class="sg up" font-size="13" letter-spacing="2.3" fill="{GOLD}">{num}</text>'
-            f'<text x="{x+52}" y="{y+12}" class="sg" font-size="46" letter-spacing="-1.4" fill="{NAVY}">{escape(title)}</text>'
-            f'<rect x="{x+52+tw+30}" y="{y-4}" width="{W-x-(x+52+tw+30)}" height="1" fill="rgba(0,0,0,.08)"/>'
-            f'<rect class="grow" x="{x+52+tw+30}" y="{y-4}" width="{W-x-(x+52+tw+30)}" height="1.5" fill="url(#gold)" style="animation-delay:.3s"/>')
+def panel(w, h, photo_name=None, overlay=None, img_w=None, x=0, y=0, radius=22, cid="p"):
+    """Rounded panel: cream paper, optionally a photo under a tinted overlay."""
+    out = f'<defs><clipPath id="{cid}"><rect width="{w}" height="{h}" rx="{radius}"/></clipPath></defs><g clip-path="url(#{cid})">'
+    out += f'<rect width="{w}" height="{h}" fill="{PAPER}"/>'
+    if photo_name:
+        data, ph = photo(photo_name, img_w or w)
+        out += f'<image href="data:image/jpeg;base64,{data}" x="{x}" y="{y}" width="{img_w or w}" height="{ph}"/>'
+        out += f'<rect width="{w}" height="{h}" fill="{overlay}"/>'
+    return out + "</g>"
+
+
+def section_title(num, title, y, x=64, size=54, right=W - 64):
+    tw = len(title) * size * 0.56
+    rule_x = x + 58 + tw + 32
+    return (f'<text x="{x}" y="{y}" class="sg" font-size="20" letter-spacing="2" fill="{ACC}">{num}</text>'
+            f'<text x="{x+58}" y="{y+14}" class="sg" font-size="{size}" letter-spacing="-1.6" fill="{NAVY}">{escape(title)}</text>'
+            f'<rect x="{rule_x:.0f}" y="{y-6}" width="{right-rule_x:.0f}" height="1.5" fill="{LINE}"/>'
+            f'<rect class="grow" x="{rule_x:.0f}" y="{y-6}" width="{right-rule_x:.0f}" height="2" fill="{ACC}" style="animation-delay:.3s"/>')
+
+
+def pill(x, y, text, size=17, weight=500, fill="rgba(255,255,255,.75)", color=NAVY, pad=20, h=None, upper=False, ls=0):
+    h = h or size * 2.1
+    w = len(text) * size * (0.62 if upper else 0.54) + pad * 2 + len(text) * ls
+    cls = "dm up" if upper else "dm"
+    return (f'<rect x="{x:.0f}" y="{y:.0f}" width="{w:.0f}" height="{h:.0f}" rx="{h/2:.0f}" fill="{fill}" stroke="{LINE}" stroke-width="1.5"/>'
+            f'<text x="{x+w/2:.0f}" y="{y+h/2+size*0.36:.0f}" text-anchor="middle" class="{cls}" font-weight="{weight}" '
+            f'font-size="{size}" letter-spacing="{ls}" fill="{color}">{escape(text)}</text>'), w
 
 
 def save(name, content):
-    p = f"{OUT}/{name}"
-    open(p, "w").write(content)
-    print(name, os.path.getsize(p) // 1024, "KB")
+    path = os.path.join(OUT, name)
+    open(path, "w").write(content)
+    print(f"{name:22} {os.path.getsize(path)//1024:4} KB")
 
 
-# ── HERO ────────────────────────────────────────────────────────────────
-def hero():
-    h = 560
-    nav = (f'<text x="56" y="62" class="sg" font-size="16" letter-spacing="1.3" fill="{NAVY}">MF</text>'
-           + "".join(f'<text x="{x}" y="62" class="dm up" font-weight="500" font-size="12" letter-spacing="1.7" fill="{MUTED}">{t}</text>'
-                     for x, t in [(380, "About"), (480, "Work"), (568, "Skills"), (660, "Experience"), (800, "Contact")])
-           + f'<rect x="1000" y="40" width="144" height="36" rx="18" fill="none" stroke="rgba({RGB},.5)" stroke-width="1.5"/>'
-           f'<text x="1072" y="63" text-anchor="middle" class="dm up" font-weight="600" font-size="12" letter-spacing="1.5" fill="{GOLD}">Portfolio ↗</text>')
-    tag = (f'<g class="fade" style="animation-delay:.1s"><rect x="56" y="172" width="36" height="1.2" fill="{GOLD}"/>'
-           f'<text x="108" y="177" class="dm up" font-size="12" letter-spacing="2.6" fill="{MUTED}">CS Student · Entrepreneur · Western University</text></g>')
-    name = ""
-    for i, (word, base) in enumerate([("Melina", 290), ("Fathidashtaki", 392)]):
-        name += (f'<defs><clipPath id="ln{i}"><rect x="0" y="{base-96}" width="{W}" height="122"/></clipPath></defs>'
-                 f'<g clip-path="url(#ln{i})"><text x="50" y="{base}" class="sg" font-size="124" letter-spacing="-5" fill="{NAVY}" '
-                 f'style="transform:translateY(110%);animation:slideUp .9s cubic-bezier(.16,1,.3,1) {0.15+i*0.1}s forwards">{word}</text></g>')
-    sub = (f'<text x="56" y="448" class="dm fade" font-size="17" letter-spacing=".6" fill="{MUTED}" style="animation-delay:.6s">'
-           f'Building at the intersection of code &amp; business.</text>')
-    btns = (f'<g class="fade" style="animation-delay:.8s"><rect x="56" y="482" width="196" height="50" rx="25" fill="url(#gold)"/>'
-            f'<text x="154" y="512" text-anchor="middle" class="dm up" font-weight="600" font-size="12.5" letter-spacing="1.6" fill="{BTN}">Selected Work →</text>'
-            f'<text x="282" y="512" class="dm up" font-weight="500" font-size="12.5" letter-spacing="1.6" fill="{NAVY}">Portfolio ↗</text></g>'
-            f'<g class="fade" style="animation-delay:1s"><rect x="1100" y="470" width="1" height="54" fill="rgba(26,42,74,.25)"/>'
-            f'<text x="1112" y="510" class="dm up" font-size="11" letter-spacing="1.8" fill="{MUTED}">Scroll</text></g>')
-    body = (gold_grad() + bg_photo("pearl-shell.jpg", h, y_off=-360,
-            overlay="url(#ov)", radius=18)
-            .replace("<defs>", f'<defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,252,246,.62)"/>'
-                     f'<stop offset=".45" stop-color="rgba(255,250,242,.30)"/><stop offset="1" stop-color="rgba(255,252,246,.66)"/></linearGradient>', 1)
-            + nav + tag + name + sub + btns)
-    save("hero.svg", svg(h, body))
-
-
-# ── MARQUEE ─────────────────────────────────────────────────────────────
-def marquee():
-    items = ["Python", "Java", "C++", "SQL", "PyTorch", "Computer Vision", "ML Engineer", "Data Pipelines",
-             "TD Scholar", "Co-Founder", "Event Organizer", "OCR", "MongoDB", "JavaFX", "Git"]
-    x, parts = 0, []
-    for rep in range(3):
-        for it in items:
-            parts.append(f'<text x="{x}" y="29" class="dm up" font-size="12" letter-spacing="2" fill="{MUTED}">{it}</text>')
-            x += len(it) * 10.6 + 22
-            parts.append(f'<text x="{x}" y="29" class="dm" font-size="12" fill="{GOLD}">·</text>')
-            x += 30
-        if rep == 0:
-            span = x
-    css = f"@keyframes tick{{from{{transform:translateX(0)}}to{{transform:translateX(-{span:.0f}px)}}}}.mq{{animation:tick 30s linear infinite}}"
-    body = (f'<defs><clipPath id="c"><rect width="{W}" height="46" rx="10"/></clipPath></defs>'
-            f'<g clip-path="url(#c)"><rect width="{W}" height="46" fill="{BG2}"/>'
-            f'<rect width="{W}" height="1" fill="rgba(0,0,0,.08)"/><rect y="45" width="{W}" height="1" fill="rgba(0,0,0,.08)"/>'
-            f'<g class="mq">{"".join(parts)}</g></g>')
-    save("marquee.svg", svg(46, body, fonts=("dm400",), extra_css=css))
-
-
-# ── ABOUT ───────────────────────────────────────────────────────────────
-def about():
-    h = 520
-    lead = ["Building real products since year one.", "Not just learning — shipping."]
-    para = ["I'm a Computer Science student at Western University who builds things",
-            "that matter — from AI pipelines that classify skin tones to data systems",
-            "driving real revenue. Selected as a TD Scholar (one of four university-wide),",
-            "admitted to the Gifted Academic Program (18 of 5,000), and co-founded a",
-            "company in my first year that grew 30% month-over-month."]
-    body = gold_grad() + bg_photo("sparkle-water.jpg", h, overlay="rgba(255,251,244,.66)", y_off=-520) + sec_head("00", "About", 92)
-    for i, l in enumerate(lead):
-        body += f'<text x="56" y="{180+i*42}" class="sg fade" font-size="32" letter-spacing="-.8" fill="{NAVY}" style="animation-delay:{.2+i*.1}s">{escape(l)}</text>'
-    for i, l in enumerate(para):
-        body += f'<text x="56" y="{290+i*28}" class="dm fade" font-size="16.5" fill="{MUTED}" style="animation-delay:{.4+i*.05}s">{escape(l)}</text>'
-    stats = [("250+", "Events organized"), ("500+", "Community members"), ("30%", "MoM revenue growth"), ("4th", "TD Scholar — university")]
-    for i, (n, label) in enumerate(stats):
-        x, y = 760 + (i % 2) * 210, 170 + (i // 2) * 150
-        body += (f'<g class="fade" style="animation-delay:{.5+i*.12}s"><rect x="{x}" y="{y}" width="190" height="128" rx="10" fill="rgba(255,255,255,.75)" stroke="rgba(0,0,0,.06)"/>'
-                 f'<text x="{x+22}" y="{y+66}" class="sg" font-size="44" letter-spacing="-1.5" fill="{GOLD}">{escape(n)}</text>'
-                 f'<text x="{x+22}" y="{y+98}" class="dm up" font-size="10.5" letter-spacing="1.4" fill="{MUTED}">{escape(label)}</text></g>')
-    save("about.svg", svg(h, body))
-
-
-# ── WORK ────────────────────────────────────────────────────────────────
-def work_head():
-    h = 130
-    body = gold_grad() + bg_photo("rays.jpg", h, overlay="rgba(255,255,255,.80)", y_off=-160) + sec_head("01", "Selected Work", 72)
-    save("work.svg", svg(h, body, fonts=("sg700",)))
-
-
+# ── content ─────────────────────────────────────────────────────────────
 PROJECTS = [
-    ("stemslice", "StemSlice", ["AI DJ engine that splits tracks into stems (vocals, drums, bass, melody)",
-                                "and blends them into seamless, beatmatched transitions."], ["Python", "Demucs", "Librosa", "FastAPI"]),
-    ("omniprep", "OmniPrep AI", ["Voice-driven mock interviews with live audio and vision telemetry and",
-                                 "an automated STAR-method debrief. Built at Ignition Hacks."], ["Python", "ElevenLabs", "Computer Vision"]),
-    ("grindtracker", "The Grind Tracker", ["Visual dashboard for job applications: statuses, deadlines, timelines",
-                                           "and the tailored résumé for every role."], ["TypeScript", "React", "Tailwind"]),
-    ("beauty", "AI Beauty Consultant", ["Matches foundation shades from a selfie and recommends skincare from",
-                                        "Sephora product data, with a skincare chatbot."], ["Python", "OpenCV", "MediaPipe", "Streamlit"]),
-    ("llmtester", "LLM Robustness Tester", ["Rewrites a prompt five ways and scores how consistent an LLM's",
-                                            "answers are, with a similarity heatmap."], ["Python", "FastAPI", "NLP"]),
-    ("spendpal", "SpendPal", ["OCR receipt scanner that sorts grocery items into categories and",
-                              "tracks spending against a budget."], ["Python", "OCR", "MongoDB"]),
+    ("stemslice", "StemSlice", "AI DJ engine that splits songs into vocals, drums, bass and melody, then blends them into seamless, beatmatched transitions.", ["Python", "Demucs", "Librosa", "FastAPI"]),
+    ("omniprep", "OmniPrep AI", "Voice-driven mock interviews with live audio and vision feedback and an automatic STAR-method debrief. Built at Ignition Hacks.", ["Python", "ElevenLabs", "Vision"]),
+    ("grindtracker", "The Grind Tracker", "A visual job-hunt dashboard: application stages, deadlines, timelines and the tailored résumé for every role.", ["TypeScript", "React", "Tailwind"]),
+    ("beauty", "AI Beauty Consultant", "Finds your foundation shade from a selfie and recommends skincare from real Sephora product data.", ["Python", "OpenCV", "MediaPipe"]),
+    ("llmtester", "LLM Robustness Tester", "Rewrites a prompt five ways and scores how consistent an LLM's answers are, with a similarity heatmap.", ["Python", "FastAPI", "NLP"]),
+    ("spendpal", "SpendPal", "Scans grocery receipts with OCR, sorts every item into a category and tracks spending against a budget.", ["Python", "OCR", "MongoDB"]),
+]
+CARD_PHOTOS = [("pearl-shell.jpg", -260), ("sparkle-water.jpg", -330), ("golden-wave.jpg", -330),
+               ("sparkle-water.jpg", -60), ("pearl-shell.jpg", -470), ("golden-wave.jpg", -210)]
+
+SKILLS = [
+    ("Languages", ["Python", "Java", "C++", "SQL", "TypeScript", "C", "R"]),
+    ("ML & Data", ["PyTorch", "OpenCV", "MediaPipe", "pandas", "NumPy", "OCR"]),
+    ("Tools", ["Git", "FastAPI", "React", "Qt", "JavaFX", "MongoDB", "Linux"]),
+    ("Business", ["Financial modeling", "Project management", "Event operations"]),
+]
+
+JOBS = [
+    ("Oct 2025 — Now", "Student Ambassador & Event Organizer", "Morrissette Institute for Entrepreneurship · Western University",
+     ["Organized 250+ events for 500+ student founders and industry leaders",
+      "Ran speaker recruitment, logistics and promotion end-to-end"]),
+    ("Sep 2025 — Now", "Co-Founder · Operations & Finance", "Gold Star Catering · Toronto, ON",
+     ["Built Python & SQL pipelines to analyze sales and expense data",
+      "Found pricing wins that drove 30% month-over-month revenue growth"]),
+    ("Nov 2024 — Now", "Instructor Assistant, Data Analytics", "Kumon Learning Centre · London, ON",
+     ["Mentor 100+ students weekly across math and reading",
+      "Track student records and achievement data"]),
 ]
 
 
-def work_rows():
-    for i, (slug, title, desc, tags) in enumerate(PROJECTS, 1):
-        h = 168
-        body = (f'<rect width="{W}" height="{h}" rx="12" fill="#ffffff" stroke="rgba(0,0,0,.07)"/>'
-                f'<text x="56" y="56" class="dm" font-size="12" letter-spacing="1.5" fill="{MUTED}">{i:02d}</text>'
-                f'<text x="120" y="58" class="sg" font-size="27" letter-spacing="-.6" fill="{NAVY}">{escape(title)}</text>')
-        for j, l in enumerate(desc):
-            body += f'<text x="120" y="{90+j*23}" class="dm" font-size="15.5" fill="{MUTED}">{escape(l)}</text>'
-        x = 120
+# ── sections ────────────────────────────────────────────────────────────
+def hero():
+    h = 620
+    ov = (f'<defs><linearGradient id="hov" x1="0" x2="1"><stop offset="0" stop-color="rgba(251,247,240,.93)"/>'
+          f'<stop offset=".5" stop-color="rgba(251,247,240,.66)"/><stop offset="1" stop-color="rgba(251,247,240,.12)"/></linearGradient></defs>')
+    body = ov + panel(W, h, "pearl-shell.jpg", "url(#hov)", img_w=1400, x=-60, y=-430, cid="hero")
+    body += (f'<text x="64" y="84" class="sg" font-size="22" letter-spacing="2" fill="{NAVY}">MF</text>')
+    p, pw = pill(0, 0, "Open to internships", size=15, weight=600, upper=True, ls=1.5, fill="rgba(255,255,255,.7)", color=ACC)
+    body += f'<g transform="translate({W-64-pw:.0f},56)">{p}</g>'
+    body += (f'<g class="fade" style="animation-delay:.1s"><rect x="64" y="178" width="44" height="2" fill="{ACC}"/>'
+             f'<text x="124" y="186" class="dm up" font-weight="600" font-size="17" letter-spacing="3.5" fill="{ACC}">Computer Science · Western University</text></g>')
+    for i, (word, base) in enumerate([("Melina", 312), ("Fathidashtaki", 430)]):
+        body += (f'<defs><clipPath id="ln{i}"><rect x="0" y="{base-110}" width="{W}" height="140"/></clipPath></defs>'
+                 f'<g clip-path="url(#ln{i})"><text x="58" y="{base}" class="sg" font-size="136" letter-spacing="-6" fill="{NAVY}" '
+                 f'style="transform:translateY(115%);animation:slideUp 1s cubic-bezier(.16,1,.3,1) {0.2+i*0.12}s forwards">{word}</text></g>')
+    body += (f'<text x="64" y="496" class="dm fade" font-size="27" fill="{MUTED}" style="animation-delay:.6s">'
+             f'Building at the intersection of code &amp; business.</text>')
+    x = 64
+    chips = ""
+    for t in ["TD Scholar", "Co-founder, Gold Star Catering", "AI · Data · Full-stack"]:
+        p, pw = pill(x, 532, t, size=18, weight=500)
+        chips += p
+        x += pw + 12
+    body += f'<g class="fade" style="animation-delay:.85s">{chips}</g>'
+    save("hero.svg", svg(W, h, body))
+
+
+def marquee():
+    items = ["Python", "Java", "C++", "SQL", "PyTorch", "Computer Vision", "Machine Learning", "Data Pipelines",
+             "TD Scholar", "Co-Founder", "Event Organizer", "OCR", "MongoDB", "React", "Git"]
+    x, parts, span = 0, [], 0
+    for rep in range(3):
+        for it in items:
+            parts.append(f'<text x="{x:.0f}" y="38" class="dm up" font-weight="500" font-size="17" letter-spacing="3" fill="{NAVY}" fill-opacity=".72">{it}</text>')
+            x += len(it) * 13.2 + 26
+            parts.append(f'<text x="{x:.0f}" y="38" class="sg" font-size="30" fill="{ACC}">·</text>')
+            x += 44
+        if rep == 0:
+            span = x
+    css = f"<style>@keyframes tick{{to{{transform:translateX(-{span:.0f}px)}}}}.mq{{animation:tick 40s linear infinite}}</style>"
+    body = (css + f'<defs><clipPath id="m"><rect width="{W}" height="60" rx="30"/></clipPath></defs>'
+            f'<g clip-path="url(#m)"><rect width="{W}" height="60" fill="url(#cream)"/><g class="mq">{"".join(parts)}</g></g>')
+    save("marquee.svg", svg(W, 60, body))
+
+
+def about():
+    h = 660
+    body = panel(W, h, "sparkle-water.jpg", "rgba(251,247,240,.72)", y=-470, cid="ab")
+    body += section_title("00", "About", 96)
+    for i, l in enumerate(["Building real products since year one.", "Not just learning — shipping."]):
+        body += f'<text x="64" y="{200+i*52}" class="sg fade" font-size="42" letter-spacing="-1.2" fill="{NAVY}" style="animation-delay:{.2+i*.1}s">{escape(l)}</text>'
+    para = ("I'm a Computer Science student at Western University who builds things that matter — "
+            "from AI pipelines that classify skin tones to data systems driving real revenue. "
+            "I believe the best engineers also understand business.")
+    for i, l in enumerate(textwrap.wrap(para, 78)):
+        body += f'<text x="64" y="{318+i*36}" class="dm fade" font-size="23" fill="{NAVY}" fill-opacity=".78" style="animation-delay:{.4+i*.05}s">{escape(l)}</text>'
+    stats = [("250+", "Events organized"), ("500+", "Community members"), ("30%", "MoM revenue growth"), ("1 of 4", "TD Scholars at Western")]
+    cw = (W - 128 - 3 * 20) / 4
+    for i, (n, label) in enumerate(stats):
+        x = 64 + i * (cw + 20)
+        body += (f'<g class="fade" style="animation-delay:{.6+i*.1}s"><rect x="{x:.0f}" y="470" width="{cw:.0f}" height="140" rx="16" fill="rgba(255,255,255,.82)" stroke="{LINE}" stroke-width="1.5"/>'
+                 f'<text x="{x+28:.0f}" y="548" class="sg" font-size="54" letter-spacing="-2" fill="{ACC}">{escape(n)}</text>'
+                 f'<text x="{x+28:.0f}" y="585" class="dm up" font-weight="600" font-size="14" letter-spacing="1.6" fill="{MUTED}">{escape(label)}</text></g>')
+    save("about.svg", svg(W, h, body))
+
+
+def work_title():
+    h = 130
+    body = panel(W, h, cid="wt") + section_title("01", "Selected Work", 74)
+    save("work.svg", svg(W, h, body))
+
+
+def cards():
+    cw, ch, band = 600, 470, 170
+    for i, ((slug, title, desc, tags), (ph, yo)) in enumerate(zip(PROJECTS, CARD_PHOTOS), 1):
+        data, phh = photo(ph, cw)
+        body = (f'<defs><clipPath id="c"><rect width="{cw}" height="{ch}" rx="22"/></clipPath>'
+                f'<linearGradient id="bo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(26,42,74,.05)"/>'
+                f'<stop offset="1" stop-color="rgba(26,42,74,.45)"/></linearGradient></defs>'
+                f'<g clip-path="url(#c)"><rect width="{cw}" height="{ch}" fill="{PAPER}"/>'
+                f'<image href="data:image/jpeg;base64,{data}" x="0" y="{yo}" width="{cw}" height="{phh}"/>'
+                f'<rect width="{cw}" height="{band}" fill="url(#bo)"/>'
+                f'<rect y="{band}" width="{cw}" height="{ch-band}" fill="{PAPER}"/></g>'
+                f'<rect x=".75" y=".75" width="{cw-1.5}" height="{ch-1.5}" rx="22" fill="none" stroke="{LINE}" stroke-width="1.5"/>'
+                f'<text x="34" y="{band-26}" class="sg" font-size="52" letter-spacing="-1" fill="#ffffff">{i:02d}</text>'
+                f'<circle cx="{cw-50}" cy="50" r="24" fill="rgba(255,255,255,.85)"/>'
+                f'<text x="{cw-50}" y="58" text-anchor="middle" class="sg" font-size="22" fill="{NAVY}">↗</text>'
+                f'<text x="34" y="{band+62}" class="sg" font-size="36" letter-spacing="-1" fill="{NAVY}">{escape(title)}</text>')
+        for j, l in enumerate(textwrap.wrap(desc, 47)[:3]):
+            body += f'<text x="34" y="{band+106+j*31}" class="dm" font-size="21" fill="{MUTED}">{escape(l)}</text>'
+        x = 34
         for t in tags:
-            w = len(t) * 8.4 + 28
-            body += (f'<rect x="{x}" y="{h-34}" width="{w:.0f}" height="22" rx="11" fill="rgba({RGB},.08)" stroke="rgba({RGB},.45)"/>'
-                     f'<text x="{x+w/2:.0f}" y="{h-19}" text-anchor="middle" class="dm up" font-weight="600" font-size="10" letter-spacing="1.2" fill="{GOLD}">{escape(t)}</text>')
-            x += w + 10
-        body += f'<text x="1144" y="64" text-anchor="end" class="sg" font-size="22" fill="{GOLD}">↗</text>'
-        save(f"p-{slug}.svg", svg(h, body, fonts=("sg700", "dm400", "dm600")))
+            p, pw = pill(x, ch - 64, t, size=14, weight=600, upper=True, ls=1.2, fill="rgba(236,220,188,.35)", color=ACC, pad=16, h=34)
+            body += p
+            x += pw + 10
+        save(f"p-{slug}.svg", svg(cw, ch, body))
 
 
-# ── SKILLS ──────────────────────────────────────────────────────────────
 def skills():
-    cols = [("Languages", [("Python", 90), ("Java", 85), ("C++", 75), ("SQL", 80), ("HTML / CSS", 78), ("C", 65)]),
-            ("ML & Data", [("PyTorch", 75), ("Computer Vision", 72), ("Pandas / NumPy", 85), ("Data Pipelines", 82), ("OCR", 70)]),
-            ("Tools", [("Git / GitHub", 90), ("FastAPI", 75), ("React / TypeScript", 70), ("JavaFX / Maven", 80), ("MongoDB", 68), ("Unix / Linux", 75)])]
-    h = 560
-    body = gold_grad() + bg_photo("sharks.jpg", h, overlay="rgba(240,248,255,.82)") + sec_head("02", "Skills", 92)
-    cw = (W - 112) / 3
-    body += f'<rect x="56" y="140" width="{W-112}" height="380" rx="10" fill="rgba(255,255,255,.88)" stroke="rgba(0,0,0,.06)"/>'
-    for c, (head, items) in enumerate(cols):
-        x0 = 56 + c * cw + 36
-        bw = cw - 72
-        if c:
-            body += f'<rect x="{56+c*cw:.0f}" y="140" width="1" height="380" fill="rgba(0,0,0,.07)"/>'
-        body += f'<text x="{x0:.0f}" y="188" class="dm up" font-weight="600" font-size="11" letter-spacing="2" fill="{GOLD}">{escape(head)}</text>'
-        for r, (name, pct) in enumerate(items):
-            y = 236 + r * 47
-            fw = bw * pct / 100
-            d = .3 + c * .15 + r * .08
-            body += (f'<text x="{x0:.0f}" y="{y}" class="dm" font-weight="500" font-size="14" fill="{NAVY}">{escape(name)}</text>'
-                     f'<text x="{x0+bw:.0f}" y="{y}" text-anchor="end" class="dm" font-size="11" fill="{MUTED}">{pct}%</text>'
-                     f'<rect x="{x0:.0f}" y="{y+11}" width="{bw:.0f}" height="2" rx="1" fill="rgba(26,42,74,.08)"/>'
-                     f'<g class="grow" style="animation-delay:{d:.2f}s"><rect x="{x0:.0f}" y="{y+11}" width="{fw:.0f}" height="2" rx="1" fill="url(#gold)"/>'
-                     f'<circle cx="{x0+fw:.0f}" cy="{y+12}" r="4" fill="{GOLD}"/></g>')
-    save("skills.svg", svg(h, body))
-
-
-# ── EXPERIENCE ──────────────────────────────────────────────────────────
-def experience():
-    jobs = [("Oct 2025 — Now", "Student Ambassador & Event Organizer", "Morrissette Institute for Entrepreneurship · Western University",
-             ["Organized 250+ events attracting 500+ student founders & industry leaders",
-              "Managed speaker recruitment, logistics, promotion & follow-up end-to-end"]),
-            ("Sep 2025 — Now", "Co-Founder · Business Operations & Finance", "Gold Star Catering · Toronto, ON",
-             ["Built Python & SQL data pipelines to analyze sales and expense data",
-              "Identified pricing opportunities driving 30% month-over-month revenue growth"]),
-            ("Nov 2024 — Now", "Instructor Assistant, Data Analytics", "Kumon Learning Centre · London, ON",
-             ["Taught & mentored 100+ students weekly across math and reading",
-              "Managed student records, achievement tracking & parent communication"])]
-    h = 150 + len(jobs) * 150 + 50
-    body = gold_grad() + bg_photo("palms.jpg", h, overlay="rgba(255,255,255,.84)") + sec_head("03", "Experience", 92)
-    for i, (when, role, org, bullets) in enumerate(jobs):
-        y = 160 + i * 150
-        body += (f'<g class="fade" style="animation-delay:{.2+i*.15}s">'
-                 f'<rect x="56" y="{y-10}" width="{W-112}" height="1" fill="rgba(0,0,0,.08)"/>'
-                 f'<text x="56" y="{y+30}" class="dm up" font-size="11.5" letter-spacing="1.6" fill="{GOLD}">{escape(when)}</text>'
-                 f'<text x="300" y="{y+32}" class="sg" font-size="23" letter-spacing="-.4" fill="{NAVY}">{escape(role)}</text>'
-                 f'<text x="300" y="{y+58}" class="dm" font-size="14" fill="{MUTED}">{escape(org)}</text>')
-        for j, b in enumerate(bullets):
-            body += (f'<rect x="300" y="{y+80+j*26}" width="10" height="1.5" fill="{GOLD}"/>'
-                     f'<text x="322" y="{y+86+j*26}" class="dm" font-size="14.5" fill="{NAVY}" fill-opacity=".82">{escape(b)}</text>')
+    h = 150 + len(SKILLS) * 82 + 30
+    body = panel(W, h, cid="sk") + section_title("02", "Skills", 96)
+    for r, (label, items) in enumerate(SKILLS):
+        y = 160 + r * 82
+        d = .2 + r * .12
+        body += (f'<g class="fade" style="animation-delay:{d:.2f}s">'
+                 f'<text x="64" y="{y+33}" class="dm up" font-weight="600" font-size="16" letter-spacing="2.4" fill="{ACC}">{escape(label)}</text>')
+        x = 290
+        for it in items:
+            p, pw = pill(x, y, it, size=20, weight=500, fill="#ffffff", h=50, pad=22)
+            body += p
+            x += pw + 12
         body += "</g>"
-    save("experience.svg", svg(h, body))
+        if r < len(SKILLS) - 1:
+            body += f'<rect x="64" y="{y+66}" width="{W-128}" height="1" fill="{LINE}"/>'
+    save("skills.svg", svg(W, h, body))
 
 
-# ── CONTACT ─────────────────────────────────────────────────────────────
+def experience():
+    step = 190
+    h = 160 + len(JOBS) * step + 10
+    body = panel(W, h, "golden-wave.jpg", "rgba(251,247,240,.88)", y=-250, cid="ex") + section_title("03", "Experience", 96)
+    for i, (when, role, org, bullets) in enumerate(JOBS):
+        y = 170 + i * step
+        body += (f'<g class="fade" style="animation-delay:{.2+i*.15}s">'
+                 f'<rect x="64" y="{y-14}" width="{W-128}" height="1.5" fill="{LINE}"/>'
+                 f'<text x="64" y="{y+36}" class="dm up" font-weight="600" font-size="16" letter-spacing="2" fill="{ACC}">{escape(when)}</text>'
+                 f'<text x="330" y="{y+38}" class="sg" font-size="32" letter-spacing="-.8" fill="{NAVY}">{escape(role)}</text>'
+                 f'<text x="330" y="{y+72}" class="dm" font-size="20" fill="{MUTED}">{escape(org)}</text>')
+        for j, b in enumerate(bullets):
+            body += (f'<circle cx="338" cy="{y+107+j*32}" r="4" fill="{ACC}"/>'
+                     f'<text x="356" y="{y+114+j*32}" class="dm" font-size="20.5" fill="{NAVY}" fill-opacity=".85">{escape(b)}</text>')
+        body += "</g>"
+    save("experience.svg", svg(W, h, body))
+
+
 def contact():
-    h = 460
-    body = gold_grad() + bg_photo("golden-wave.jpg", h, overlay="rgba(252,247,238,.58)", y_off=-640) + sec_head("04", "Contact", 92)
-    body += (f'<text x="56" y="200" class="sg fade" font-size="64" letter-spacing="-2.4" fill="{NAVY}" style="animation-delay:.2s">Let\'s build something.</text>'
-             f'<text x="58" y="244" class="dm fade" font-size="17" fill="{MUTED}" style="animation-delay:.35s">Open to internships, collaborations &amp; interesting problems.</text>')
-    for i, (k, v) in enumerate([("Email", "melina3825@gmail.com ↗"), ("LinkedIn", "melina-f-53372b20a ↗"), ("GitHub", "@Meellinaa ↗")]):
-        x = 56 + i * 370
-        body += (f'<g class="fade" style="animation-delay:{.5+i*.1}s"><rect x="{x}" y="{h-36}" width="340" height="1" fill="rgba(0,0,0,.1)"/>'
-                 f'<text x="{x}" y="{h-72}" class="dm up" font-size="11" letter-spacing="2" fill="{GOLD}">{k}</text>'
-                 f'<text x="{x}" y="{h-48}" class="dm" font-weight="500" font-size="17" fill="{NAVY}">{escape(v)}</text></g>')
-    save("contact.svg", svg(h, body))
+    h = 480
+    body = panel(W, h, "golden-wave.jpg", "rgba(251,247,240,.55)", y=-640, cid="ct") + section_title("04", "Contact", 96)
+    body += (f'<text x="60" y="230" class="sg fade" font-size="80" letter-spacing="-3" fill="{NAVY}" style="animation-delay:.2s">Let\'s build something.</text>'
+             f'<text x="64" y="282" class="dm fade" font-size="25" fill="{NAVY}" fill-opacity=".8" style="animation-delay:.35s">Open to internships, collaborations &amp; interesting problems.</text>')
+    for i, (k, v) in enumerate([("Email", "melina3825@gmail.com"), ("LinkedIn", "melina-f-53372b20a"), ("GitHub", "@Meellinaa")]):
+        x = 64 + i * 370
+        body += (f'<g class="fade" style="animation-delay:{.5+i*.1}s"><rect x="{x}" y="{h-48}" width="330" height="1.5" fill="{NAVY}" fill-opacity=".25"/>'
+                 f'<text x="{x}" y="{h-104}" class="dm up" font-weight="600" font-size="15" letter-spacing="2.4" fill="{NAVY}" fill-opacity=".7">{k}</text>'
+                 f'<text x="{x}" y="{h-68}" class="dm" font-weight="500" font-size="23" fill="{NAVY}">{escape(v)} ↗</text></g>')
+    save("contact.svg", svg(W, h, body))
 
 
-for f in [hero, marquee, about, work_head, work_rows, skills, experience, contact]:
-    f()
+if __name__ == "__main__":
+    for old in os.listdir(OUT):
+        if old.endswith(".svg"):
+            os.remove(os.path.join(OUT, old))
+    for f in [hero, marquee, about, work_title, cards, skills, experience, contact]:
+        f()
