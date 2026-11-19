@@ -137,9 +137,7 @@ def hero():
     ov = (f'<defs><linearGradient id="hov" x1="0" x2="1"><stop offset="0" stop-color="rgba(251,247,240,.93)"/>'
           f'<stop offset=".5" stop-color="rgba(251,247,240,.66)"/><stop offset="1" stop-color="rgba(251,247,240,.12)"/></linearGradient></defs>')
     body = ov + panel(W, h, "white-shell.jpg", "url(#hov)", img_w=1200, x=0, y=-80, cid="hero")
-    body += (f'<text x="64" y="84" class="sg" font-size="22" letter-spacing="2" fill="{NAVY}">MF</text>')
-    p, pw = pill(0, 0, "Open to internships", size=15, weight=600, upper=True, ls=1.5, fill="rgba(255,255,255,.7)", color=ACC)
-    body += f'<g transform="translate({W-64-pw:.0f},56)">{p}</g>'
+    body += (f'<text x="64" y="84" class="sg" font-size="24" letter-spacing="-1" fill="{NAVY}">MF</text>')
     body += (f'<g class="fade" style="animation-delay:.1s"><rect x="64" y="178" width="44" height="2" fill="{ACC}"/>'
              f'<text x="124" y="186" class="dm up" font-weight="600" font-size="17" letter-spacing="3.5" fill="{ACC}">Computer Science · Western University</text></g>')
     for i, (word, base) in enumerate([("Melina", 312), ("Fathidashtaki", 430)]):
