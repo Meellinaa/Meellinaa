@@ -107,8 +107,9 @@ PROJECTS = [
     ("llmtester", "LLM Robustness Tester", "Rewrites a prompt five ways and scores how consistent an LLM's answers are, with a similarity heatmap.", ["Python", "FastAPI", "NLP"]),
     ("spendpal", "SpendPal", "Scans grocery receipts with OCR, sorts every item into a category and tracks spending against a budget.", ["Python", "OCR", "MongoDB"]),
 ]
-CARD_PHOTOS = [("pearl-shell.jpg", -260), ("sparkle-water.jpg", -330), ("golden-wave.jpg", -330),
-               ("sparkle-water.jpg", -60), ("pearl-shell.jpg", -470), ("golden-wave.jpg", -210)]
+# (photo, vertical offset of the photo inside the card's top strip), in PROJECTS order
+CARD_PHOTOS = [("conch.jpg", -95), ("sparkle-water.jpg", -330), ("golden-wave.jpg", -330),
+               ("pearl-shell.jpg", -260), ("arches.jpg", -115), ("roses-fountain.jpg", -215)]
 
 SKILLS = [
     ("Languages", ["Python", "Java", "C++", "SQL", "TypeScript", "C", "R"]),
@@ -230,7 +231,7 @@ def cards():
 
 def skills():
     h = 150 + len(SKILLS) * 82 + 30
-    body = panel(W, h, cid="sk") + section_title("02", "Skills", 96)
+    body = panel(W, h, "palms.jpg", "rgba(251,247,240,.84)", y=-520, cid="sk") + section_title("02", "Skills", 96)
     for r, (label, items) in enumerate(SKILLS):
         y = 160 + r * 82
         d = .2 + r * .12
