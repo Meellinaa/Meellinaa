@@ -136,7 +136,7 @@ def hero():
     h = 620
     ov = (f'<defs><linearGradient id="hov" x1="0" x2="1"><stop offset="0" stop-color="rgba(251,247,240,.93)"/>'
           f'<stop offset=".5" stop-color="rgba(251,247,240,.66)"/><stop offset="1" stop-color="rgba(251,247,240,.12)"/></linearGradient></defs>')
-    body = ov + panel(W, h, "pearl-shell.jpg", "url(#hov)", img_w=1400, x=-60, y=-430, cid="hero")
+    body = ov + panel(W, h, "white-shell.jpg", "url(#hov)", img_w=1200, x=0, y=-80, cid="hero")
     body += (f'<text x="64" y="84" class="sg" font-size="22" letter-spacing="2" fill="{NAVY}">MF</text>')
     p, pw = pill(0, 0, "Open to internships", size=15, weight=600, upper=True, ls=1.5, fill="rgba(255,255,255,.7)", color=ACC)
     body += f'<g transform="translate({W-64-pw:.0f},56)">{p}</g>'
