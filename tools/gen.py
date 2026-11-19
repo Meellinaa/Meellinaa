@@ -1,6 +1,6 @@
 """Generate the animated SVG images used in the GitHub profile README.
 
-Run:  python3 tools/gen.py      (writes everything into ../assets)
+Run:  python3 tools/gen.py      (writes everything into ../img)
 Edit the PROJECTS / SKILLS / JOBS lists below to change the content.
 """
 import base64, io, os, textwrap
@@ -8,7 +8,7 @@ from html import escape
 from PIL import Image
 
 SCR = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(SCR, "..", "assets")
+OUT = os.path.join(SCR, "..", "img")
 os.makedirs(OUT, exist_ok=True)
 
 W = 1200

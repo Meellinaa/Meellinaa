@@ -1,23 +1,23 @@
-<a href="https://meellinaa.github.io/"><img src="assets/hero.svg?v=2" width="100%" alt="Melina Fathidashtaki — Computer Science at Western University. Building at the intersection of code & business."></a>
+<a href="https://meellinaa.github.io/"><img src="img/hero.svg" width="100%" alt="Melina Fathidashtaki — Computer Science at Western University. Building at the intersection of code & business."></a>
 
-<img src="assets/marquee.svg?v=2" width="100%" alt="Python · Java · C++ · SQL · PyTorch · Computer Vision · Machine Learning · Data Pipelines">
+<img src="img/marquee.svg" width="100%" alt="Python · Java · C++ · SQL · PyTorch · Computer Vision · Machine Learning · Data Pipelines">
 
-<img src="assets/about.svg?v=2" width="100%" alt="About: CS student at Western University, TD Scholar, co-founder of a company that grew 30% month-over-month.">
+<img src="img/about.svg" width="100%" alt="About: CS student at Western University, TD Scholar, co-founder of a company that grew 30% month-over-month.">
 
-<img src="assets/work.svg?v=2" width="100%" alt="01 Selected Work">
+<img src="img/work.svg" width="100%" alt="01 Selected Work">
 
-<a href="https://github.com/Meellinaa/StemSlice"><img src="assets/p-stemslice.svg?v=2" width="49%" alt="StemSlice — AI DJ engine"></a>
-<a href="https://github.com/Meellinaa/omniprep-ai"><img src="assets/p-omniprep.svg?v=2" width="49%" alt="OmniPrep AI — AI mock interview simulator"></a>
-<a href="https://github.com/Meellinaa/TheGrindTracker"><img src="assets/p-grindtracker.svg?v=2" width="49%" alt="The Grind Tracker — job application dashboard"></a>
-<a href="https://github.com/Meellinaa/ai-beauty-consultant"><img src="assets/p-beauty.svg?v=2" width="49%" alt="AI Beauty Consultant — foundation matching and skincare recommendations"></a>
-<a href="https://github.com/Meellinaa/llm-robustness-tester"><img src="assets/p-llmtester.svg?v=2" width="49%" alt="LLM Robustness Tester — prompt consistency scoring"></a>
-<a href="https://github.com/Meellinaa/SpendPal"><img src="assets/p-spendpal.svg?v=2" width="49%" alt="SpendPal — OCR grocery receipt budget tracker"></a>
+<a href="https://github.com/Meellinaa/StemSlice"><img src="img/p-stemslice.svg" width="49%" alt="StemSlice — AI DJ engine"></a>
+<a href="https://github.com/Meellinaa/omniprep-ai"><img src="img/p-omniprep.svg" width="49%" alt="OmniPrep AI — AI mock interview simulator"></a>
+<a href="https://github.com/Meellinaa/TheGrindTracker"><img src="img/p-grindtracker.svg" width="49%" alt="The Grind Tracker — job application dashboard"></a>
+<a href="https://github.com/Meellinaa/ai-beauty-consultant"><img src="img/p-beauty.svg" width="49%" alt="AI Beauty Consultant — foundation matching and skincare recommendations"></a>
+<a href="https://github.com/Meellinaa/llm-robustness-tester"><img src="img/p-llmtester.svg" width="49%" alt="LLM Robustness Tester — prompt consistency scoring"></a>
+<a href="https://github.com/Meellinaa/SpendPal"><img src="img/p-spendpal.svg" width="49%" alt="SpendPal — OCR grocery receipt budget tracker"></a>
 
-<img src="assets/skills.svg?v=2" width="100%" alt="Skills: Python, Java, C++, SQL, TypeScript, PyTorch, OpenCV, pandas, Git, FastAPI, React, MongoDB">
+<img src="img/skills.svg" width="100%" alt="Skills: Python, Java, C++, SQL, TypeScript, PyTorch, OpenCV, pandas, Git, FastAPI, React, MongoDB">
 
-<img src="assets/experience.svg?v=2" width="100%" alt="Experience: Morrissette Institute event organizer, Gold Star Catering co-founder, Kumon instructor assistant">
+<img src="img/experience.svg" width="100%" alt="Experience: Morrissette Institute event organizer, Gold Star Catering co-founder, Kumon instructor assistant">
 
-<a href="https://meellinaa.github.io/"><img src="assets/contact.svg?v=2" width="100%" alt="Let's build something. Open to internships, collaborations & interesting problems."></a>
+<a href="https://meellinaa.github.io/"><img src="img/contact.svg" width="100%" alt="Let's build something. Open to internships, collaborations & interesting problems."></a>
 
 <p align="center">
   <a href="https://meellinaa.github.io/"><img src="https://img.shields.io/badge/Portfolio-meellinaa.github.io-a8875a?style=for-the-badge&labelColor=1a2a4a" alt="Portfolio"></a>
