@@ -6,12 +6,11 @@
 
 <img src="img/work.svg" width="100%" alt="01 Selected Work">
 
-<a href="https://github.com/Meellinaa/StemSlice"><img src="img/p-stemslice.svg" width="49%" alt="StemSlice — AI DJ engine"></a>
-<a href="https://github.com/Meellinaa/omniprep-ai"><img src="img/p-omniprep.svg" width="49%" alt="OmniPrep AI — AI mock interview simulator"></a>
-<a href="https://github.com/Meellinaa/TheGrindTracker"><img src="img/p-grindtracker.svg" width="49%" alt="The Grind Tracker — job application dashboard"></a>
-<a href="https://github.com/Meellinaa/ai-beauty-consultant"><img src="img/p-beauty.svg" width="49%" alt="AI Beauty Consultant — foundation matching and skincare recommendations"></a>
-<a href="https://github.com/Meellinaa/llm-robustness-tester"><img src="img/p-llmtester.svg" width="49%" alt="LLM Robustness Tester — prompt consistency scoring"></a>
-<a href="https://github.com/Meellinaa/SpendPal"><img src="img/p-spendpal.svg" width="49%" alt="SpendPal — OCR grocery receipt budget tracker"></a>
+<p><a href="https://github.com/Meellinaa/StemSlice"><img src="img/p-stemslice.svg" width="50%" alt="StemSlice — AI DJ engine"></a><a href="https://github.com/Meellinaa/omniprep-ai"><img src="img/p-omniprep.svg" width="50%" alt="OmniPrep AI — AI mock interview simulator"></a></p>
+
+<p><a href="https://github.com/Meellinaa/TheGrindTracker"><img src="img/p-grindtracker.svg" width="50%" alt="The Grind Tracker — job application dashboard"></a><a href="https://github.com/Meellinaa/ai-beauty-consultant"><img src="img/p-beauty.svg" width="50%" alt="AI Beauty Consultant — foundation matching and skincare recommendations"></a></p>
+
+<p><a href="https://github.com/Meellinaa/llm-robustness-tester"><img src="img/p-llmtester.svg" width="50%" alt="LLM Robustness Tester — prompt consistency scoring"></a><a href="https://github.com/Meellinaa/SpendPal"><img src="img/p-spendpal.svg" width="50%" alt="SpendPal — OCR grocery receipt budget tracker"></a></p>
 
 <img src="img/skills.svg" width="100%" alt="Skills: Python, Java, C++, SQL, TypeScript, PyTorch, OpenCV, pandas, Git, FastAPI, React, MongoDB">
 

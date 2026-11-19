@@ -204,8 +204,12 @@ def work_title():
 
 
 def cards():
-    cw, ch, band = 600, 470, 170
+    # Each image is half the page width (600 of 1200). The card itself is 584 wide and sits
+    # against the outer edge, so two side by side leave an even 32-unit gutter in the middle.
+    full, gutter, ch, band = 600, 16, 470, 170
+    cw = full - gutter
     for i, ((slug, title, desc, tags), (ph, yo)) in enumerate(zip(PROJECTS, CARD_PHOTOS), 1):
+        ox = 0 if i % 2 else gutter
         data, phh = photo(ph, cw)
         body = (f'<defs><clipPath id="c"><rect width="{cw}" height="{ch}" rx="22"/></clipPath>'
                 f'<linearGradient id="bo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(26,42,74,.05)"/>'
@@ -226,7 +230,7 @@ def cards():
             p, pw = pill(x, ch - 64, t, size=14, weight=600, upper=True, ls=1.2, fill="rgba(236,220,188,.35)", color=ACC, pad=16, h=34)
             body += p
             x += pw + 10
-        save(f"p-{slug}.svg", svg(cw, ch, body))
+        save(f"p-{slug}.svg", svg(full, ch, f'<g transform="translate({ox},0)">{body}</g>'))
 
 
 def skills():
